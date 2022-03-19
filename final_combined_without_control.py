@@ -380,7 +380,7 @@ for filename in glob.glob('D:/team/UORG/computer_vision_second_option/data01/*.p
         #move(target_center[0],target_center[1])
     #drawing the arrow
     elif cnt2draw_2 is not None:
-        frame, target_center, target_angle_arrow, distance = draw_arrow_by_rotating(frame,cnt2draw_2,per_frame)
+        frame, target_center_arrow, target_angle_arrow, distance = draw_arrow_by_rotating(frame,cnt2draw_2,per_frame)
         #is_OCR=1
         #if distance is not in arrow_list:
         
@@ -401,7 +401,7 @@ for filename in glob.glob('D:/team/UORG/computer_vision_second_option/data01/*.p
         if remaining_frame>0:
             cv2.putText(frame, letter, detected_coordinates, cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,0), 3, cv2.LINE_AA) 
         if remaining_frame>2 and letter!=last_letter:
-            f_out.write(frame_id +"_"+ str(target_center[1]) +"_"+ str(target_center[0]) +"_"+ letter+"\n")
+            f_out.write(frame_id +"_"+ str(target_center[0]) +"_"+ str(target_center[1]) +"_"+ letter+"\n")
             last_letter=letter
     #print(target_center,target_angle)
     #print(line_instructions)
