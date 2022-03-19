@@ -388,7 +388,7 @@ for filename in glob.glob('D:/team/UORG/computer_vision_second_option/data01/*.p
         else: target_angle_arrow=-90-target_angle_arrow
         
         target_angle_arrow = round(target_angle_arrow,2)
-        arrow_list.append([distance,target_angle_arrow])
+        arrow_list.append([distance,target_angle_arrow,frame_id])
         #if distance: distance_list.append(distance)
         if remaining_frame>0: remaining_frame-=1
         #move(target_center[0],target_center[1], target_angle)
@@ -414,7 +414,7 @@ for filename in glob.glob('D:/team/UORG/computer_vision_second_option/data01/*.p
     print(distance_list)
     for i in arrow_list:
         if   distance_list.count(i[0])>16  and i[0] not in printed_distances and i[0]!=0:
-            f_out.write(frame_id +"_"+ str(i[1])+"_"+ str(i[0])+"\n")
+            f_out.write(str(i[2]) +"_"+ str(i[1])+"_"+ str(i[0])+"\n")
             printed_distances.append(i[0])
 
 
