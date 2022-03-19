@@ -127,6 +127,7 @@ def draw_arrow_by_rotating(frame, cnt, per_frame):
         (x2,y2)=arrow_tip
         #arrow_angle = int(180*(np.arctan((x1-x2)/(y1-y2))))  #if y1!=y2
         arrow_angle = (np.arctan( (y2-y1)/(x2 - x1)) )* 180 / np.pi
+        #alternative=arrow_angle
         arrow_angle=abs(arrow_angle)
         if y2<y1:
             if x2<x1:arrow_angle= arrow_angle-90
@@ -141,7 +142,9 @@ def draw_arrow_by_rotating(frame, cnt, per_frame):
     cv2.drawContours(blurred, [cnt], -1, (255,255,255), -1)
     cv2.rectangle(frame,(x-w,y),(x+2*w,y+h),(0,255,0),2)
     rotated=rotate_image(blurred, arrow_angle, center)
+    cv2.imshow("rotated",rotated)
     toOCR = rotated[y:y+h,x-w:x+2*w]
+    cv2.imshow("toOCR", toOCR)
     #_,toOCR =cv2.threshold(toOCR, 0, 255, cv2.THRESH_BINARY+ cv2.THRESH_OTSU )
     _,toOCR =cv2.threshold(toOCR, 50, 255, cv2.THRESH_BINARY )
     options = "--psm 6 outputbase digits"
@@ -155,7 +158,7 @@ def draw_arrow_by_rotating(frame, cnt, per_frame):
         cv2.putText(frame, "distance: "+str(n), detected_coordinates_bottom, cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,0), 3, cv2.LINE_AA)
     except:
         pass
-    return frame, [x1,y1], arrow_angle, n, toOCR
+    return frame, [x1,y1], arrow_angle, n
 
 def find_sett(approx):
     #finding and comparing the lengths of the contours
@@ -241,37 +244,6 @@ def rotate_image(img, angle, center):
     rotated_image=cv2.warpAffine(img, M=rotation_matrix, dsize=(w,h))
     return rotated_image
 
-"""
-def control(point, angle):
-    
-    return None
-
-def move_cm(target_x, target_y):
-    #current_state+x
-    #control()
-    return None
-
-def move_pix(target_x, target_y=h_2):
-    y_distance=h_2-target_y
-    x_distance=target_x-w_2
-    
-    while abs(x_distance)>=x_thresh or abs(y_distance)>=y_thresh:
-        move_cm(x_distance,y_distance)
-    
-    #move_cm()
-    return None
-
-def follow_line(target_x, target_angle):
-    rotate(target_angle)
-    move_pix(target_x)
-    return None
-    
-
-def rotate(target_angle):
-    #rotate
-    return None
-"""
-
 
 x_thresh=200
 y_thresh=200
@@ -317,7 +289,7 @@ line_instructions = list(map(lambda x: x.strip(), line_instructions))
 for filename in glob.glob('D:/team/UORG/computer_vision_second_option/data01/*.png'):
     frame = cv2.imread(filename)
     frame_id=filename[-9:-4]
-    print("frame id:",frame_id)
+    #print("frame id:",frame_id)
     if remaining_frame>0: remaining_frame-=1
     #print(remaining_frame)
     per_frame=0
@@ -378,7 +350,7 @@ for filename in glob.glob('D:/team/UORG/computer_vision_second_option/data01/*.p
         elif len_approx==12:
             cnt2draw_3=cnt
             sett=find_sett(approx)
-            print(sett)
+            #print(sett)
 
             #differing H and X
             if sett == 5 and not was_arrow:
@@ -408,16 +380,16 @@ for filename in glob.glob('D:/team/UORG/computer_vision_second_option/data01/*.p
         #move(target_center[0],target_center[1])
     #drawing the arrow
     elif cnt2draw_2 is not None:
-        frame, target_center, target_angle_arrow, distance = draw_arrow(frame,cnt2draw_2,per_frame)
-        is_OCR=1
+        frame, target_center, target_angle_arrow, distance = draw_arrow_by_rotating(frame,cnt2draw_2,per_frame)
+        #is_OCR=1
         #if distance is not in arrow_list:
-        if target_angle>0: target_angle=90-target_angle
-        else: target_angle=-90-target_angle
+        
+        if target_angle_arrow>0: target_angle_arrow=90-target_angle_arrow
+        else: target_angle_arrow=-90-target_angle_arrow
+        
+        target_angle_arrow = round(target_angle_arrow,2)
         arrow_list.append([distance,target_angle_arrow])
-        if distance: distance_list.append(distance)
-        if not distance in arrows.keys():
-            arrow_counter +=1
-            arrows[distance] = "arrow"+str(arrow_counter)
+        #if distance: distance_list.append(distance)
         if remaining_frame>0: remaining_frame-=1
         #move(target_center[0],target_center[1], target_angle)
     #drawing the letter
@@ -438,21 +410,16 @@ for filename in glob.glob('D:/team/UORG/computer_vision_second_option/data01/*.p
         f_out.write(frame_id +"_"+ str(int(line_center[0]<w_2))+"\n")
     
 
+    distance_list=[i[0] for i in arrow_list]
     print(distance_list)
-    if len(distance_list)>10:
-        for i in distance_list:
-                if distance_list.count(i)<2:
-                    distance_list=[j for j in distance_list if j!=i]
-        for i in arrow_list:
-            if i[0] in distance_list and i[0] not in printed_distances:
-                f_out.write(frame_id +"_"+ str(target_angle_arrow)+"_"+ str(i[0])+"\n")
-                printed_distances.append(i[0])
-    
+    for i in arrow_list:
+        if   distance_list.count(i[0])>16  and i[0] not in printed_distances and i[0]!=0:
+            f_out.write(frame_id +"_"+ str(i[1])+"_"+ str(i[0])+"\n")
+            printed_distances.append(i[0])
 
 
 
 
-    #print(arrows.keys())
     for_us=frame.copy()
     dif=300
     cv2.rectangle(for_us, (w_2-dif,h_2-dif), (w_2+dif,h_2+dif), (255,0,0), 3)
